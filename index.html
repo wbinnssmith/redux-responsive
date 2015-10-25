@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Redux-responsive by aaivazis</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Redux-responsive</h1>
+        <h2>Manage the responsive state of your application using a redux reducer</h2>
+        <a href="https://github.com/aaivazis/redux-responsive" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="redux-responsive" class="anchor" href="#redux-responsive" aria-hidden="true"><span class="octicon octicon-link"></span></a>redux-responsive</h1>
+
+<p>A redux reducer for managing the responsive state of your application</p>
+
+<h1>
+<a id="why-use-redux-for-responsive-behavior" class="anchor" href="#why-use-redux-for-responsive-behavior" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why Use Redux for Responsive Behavior?</h1>
+
+<p>redux-responsive <strong>does not require that you use React as your view library</strong>.  However, since that is what we use, the explanation of our motivation mentions React.</p>
+
+<p>There are many solutions for cleanly handling responsive designs in React applications. One common approach is to wrap a component in another component which is responsible for handling the behavior and passing the information down as a prop. While this at first seems good and the "react way", as the behavior gets more complicated, this quickly leads to a lot of boilerplate code in a single component. Also, depending on the implementation, it is possible that many copies of the responsive wrapper would create many different resize handlers.</p>
+
+<p>Using redux not only reduces the overall noise in a component, but also guarantees that only a single event listener is waiting for resize.</p>
+
+<h1>
+<a id="setup" class="anchor" href="#setup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Setup</h1>
+
+<p>First, add the reducer somewhere in your reducer tree.  It's just a reducer so you can put it wherever you want!  For example, you could put it in your top level call to <code>combineReducers</code>.</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-c">// reducer.js</span>
+
+<span class="pl-k">import</span> {<span class="pl-smi">combineReducers</span>} <span class="pl-k">from</span> <span class="pl-s"><span class="pl-pds">'</span>redux<span class="pl-pds">'</span></span>
+<span class="pl-k">import</span> {<span class="pl-smi">responsiveStateReducer</span>} <span class="pl-k">from</span> <span class="pl-s"><span class="pl-pds">'</span>redux-responsive<span class="pl-pds">'</span></span>
+
+<span class="pl-k">export</span> <span class="pl-v">default</span> <span class="pl-smi">combineReducers</span>({
+    <span class="pl-smi">browser</span>: <span class="pl-smi">responsiveStateReducer</span>,
+})</pre></div>
+
+<p>Second, you must add the resize handlers to the window.  To do this, simply pass your store to <code>addResponsiveHandlers</code>.</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-c">// store.js</span>
+
+<span class="pl-k">import</span> {<span class="pl-smi">createStore</span>} <span class="pl-k">from</span> <span class="pl-s"><span class="pl-pds">'</span>redux<span class="pl-pds">'</span></span>
+<span class="pl-k">import</span> {<span class="pl-smi">addResponsiveHandlers</span>} <span class="pl-k">from</span> <span class="pl-s"><span class="pl-pds">'</span>redux-responsive<span class="pl-pds">'</span></span>
+<span class="pl-k">import</span> <span class="pl-smi">reducer</span> <span class="pl-k">from</span> <span class="pl-s"><span class="pl-pds">'</span>./reducer<span class="pl-pds">'</span></span>
+
+<span class="pl-k">const</span> <span class="pl-c1">store</span> <span class="pl-k">=</span> createStore(reducers)
+
+<span class="pl-c">// adds window resize event handler</span>
+addResponsiveHandlers(store)
+
+<span class="pl-k">export</span> <span class="pl-v">default</span> <span class="pl-smi">store</span></pre></div>
+
+<p>Now your store is ready to use. The store's default breakpoints match common device sizes and are accessible by the following names which are used to identify them in your view:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-k">const</span> <span class="pl-c1">defaultBreakpoints</span> <span class="pl-k">=</span> {
+    extraSmall<span class="pl-k">:</span> <span class="pl-c1">480</span>,
+    small<span class="pl-k">:</span> <span class="pl-c1">768</span>,
+    medium<span class="pl-k">:</span> <span class="pl-c1">992</span>,
+    large<span class="pl-k">:</span> <span class="pl-c1">1200</span>,
+}</pre></div>
+
+<h2>
+<a id="using-custom-breakpoints" class="anchor" href="#using-custom-breakpoints" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using Custom Breakpoints</h2>
+
+<p>You can also create your own reducer based on custom breakpoints:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-c">// reducer.js</span>
+
+<span class="pl-k">import</span> {<span class="pl-smi">combineReducers</span>} <span class="pl-k">from</span> <span class="pl-s"><span class="pl-pds">'</span>redux<span class="pl-pds">'</span></span>
+<span class="pl-k">import</span> {<span class="pl-smi">createResponsiveStateReducer</span>} <span class="pl-k">from</span> <span class="pl-s"><span class="pl-pds">'</span>redux-responsive<span class="pl-pds">'</span></span>
+
+<span class="pl-k">export</span> <span class="pl-v">default</span> <span class="pl-smi">combineReducers</span>({
+    <span class="pl-smi">browser</span>: <span class="pl-smi">createResponsiveStateReducer</span>({
+        <span class="pl-smi">extraSmall</span>: 500,
+        <span class="pl-smi">small</span>: 700,
+        <span class="pl-smi">medium</span>: 1000,
+        <span class="pl-smi">large</span>: 1280,
+        <span class="pl-smi">extraLarge</span>: 1400,
+    }),
+})</pre></div>
+
+<h1>
+<a id="the-responsive-state" class="anchor" href="#the-responsive-state" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Responsive State</h1>
+
+<p>The <code>responsiveStateReducer</code> (and the reducer returned by <code>createResponsiveStateReducer</code>) adds an object with the following keys to the store:</p>
+
+<ul>
+<li>
+<code>width</code>: (<em>number</em>) The browser width.</li>
+<li>
+<code>mediaType</code>: (<em>string</em>) The largest breakpoint category that the browser satisfies.</li>
+<li>
+<code>lessThan</code>: (<em>object</em>) An object of booleans that indicate whether the browser is currently less than a particular breakpoint.</li>
+<li>
+<code>greaterThan</code>: (<em>object</em>) An object of booleans that indicate whether the browser is currently greater than a particular breakpoint.</li>
+</ul>
+
+<p>For example, if you put the responsive state under the key <code>browser</code> (as is done in the examples above) then you can access the browser's width and current media type, and determine if the browser is wider than the medium breakpoint like so</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-c">// get the current state from the store</span>
+<span class="pl-k">const</span> <span class="pl-c1">state</span> <span class="pl-k">=</span> store.getState()
+
+<span class="pl-c">// browser width (e.g. 1400)</span>
+state.browser.<span class="pl-c1">width</span>
+<span class="pl-c">// browser media type (e.g. "large")</span>
+state.browser.mediaType
+<span class="pl-c">// true if browser width is greater than the "medium" breakpoint</span>
+state.browser.greaterThan.medium</pre></div>
+
+<h1>
+<a id="example-usage-with-react-and-react-redux" class="anchor" href="#example-usage-with-react-and-react-redux" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example Usage with React (and react-redux)</h1>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-c">// MyComponent.js</span>
+
+<span class="pl-k">import</span> <span class="pl-smi">React</span> <span class="pl-k">from</span> <span class="pl-s"><span class="pl-pds">'</span>react<span class="pl-pds">'</span></span>
+<span class="pl-k">import</span> {<span class="pl-smi">connect</span>} <span class="pl-k">from</span> <span class="pl-s"><span class="pl-pds">'</span>react-redux<span class="pl-pds">'</span></span>
+
+<span class="pl-c">// grab only the responsive state from the store</span>
+<span class="pl-c">// (assuming you have put the `responsiveStateReducer` under</span>
+<span class="pl-c">//  the key `browser` in your state tree)</span>
+<span class="pl-k">function</span> <span class="pl-en">browserSelector</span>({<span class="pl-smi">browser</span>}) {
+    <span class="pl-k">return</span> {browser}
+}
+
+@connect(browserSelector)
+<span class="pl-k">class</span> <span class="pl-en">MyComponent</span> <span class="pl-k">extends</span> <span class="pl-en">React.Component</span> {
+    <span class="pl-en">render</span>() {
+        <span class="pl-c">// grab the responsive state off of props</span>
+        <span class="pl-k">const</span> {<span class="pl-c1">browser</span>} <span class="pl-k">=</span> <span class="pl-v">this</span>.props
+
+        <span class="pl-k">let</span> message <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">`</span>The viewport's current media type is: <span class="pl-s1"><span class="pl-pse">${</span>browser.mediaType<span class="pl-pse">}</span></span>.<span class="pl-pds">`</span></span>
+
+        <span class="pl-k">if</span> (browser.lessThan.small) {
+            message <span class="pl-k">+=</span> <span class="pl-s"><span class="pl-pds">'</span>Secret message for viewports smaller than than the "small" breakpoint!<span class="pl-pds">'</span></span>
+        } <span class="pl-k">else</span> <span class="pl-k">if</span> (browser.lessThan.medium) {
+            message <span class="pl-k">+=</span> <span class="pl-s"><span class="pl-pds">'</span>Secret message for viewports between the "small" and "medium" breakpoints!<span class="pl-pds">'</span></span>
+        } <span class="pl-k">else</span> {
+            message <span class="pl-k">+=</span> <span class="pl-s"><span class="pl-pds">'</span>Message for viewports greater than the "medium" breakpoint.<span class="pl-pds">'</span></span>
+        }
+
+        <span class="pl-k">return</span> (
+            <span class="pl-k">&lt;</span>p<span class="pl-k">&gt;</span>
+                {message}
+            <span class="pl-k">&lt;/</span>p<span class="pl-k">&gt;</span>
+        )
+    }
+}</pre></div>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/aaivazis/redux-responsive/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/aaivazis/redux-responsive/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/aaivazis/redux-responsive"></a> is maintained by <a href="https://github.com/aaivazis">aaivazis</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
